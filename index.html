@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bingo Matemático</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --secondary: #f59e0b;
+            --secondary-hover: #d97706;
+            --bg-color: #f8fafc;
+            --surface: #ffffff;
+            --text-main: #0f172a;
+            --text-light: #64748b;
+            --danger: #ef4444;
+            --success: #10b981;
+            --border: #e2e8f0;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --modal-overlay: rgba(15, 23, 42, 0.6);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
+        
+        body { background-color: var(--bg-color); color: var(--text-main); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+        /* HEADER */
+        header { background-color: var(--surface); height: 70px; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; box-shadow: var(--shadow); z-index: 10; flex-shrink: 0; }
+        header h1 { font-size: 24px; color: var(--primary); font-weight: 700; letter-spacing: 0.5px; }
+        .icon-btn { background: none; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 8px; border-radius: 8px; transition: background 0.2s; }
+        .icon-btn:hover { background-color: var(--border); }
+        .icon-btn svg { width: 28px; height: 28px; fill: var(--text-main); }
+
+        /* MAIN APP CONTAINER */
+        main { flex: 1; position: relative; overflow-y: auto; overflow-x: hidden; padding: 24px 24px 100px 24px; display: flex; flex-direction: column; }
+        .screen { display: none; flex-direction: column; flex: 1; animation: fadeIn 0.3s ease; }
+        .screen.active { display: flex; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* BUTTONS */
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 16px 32px; font-size: 18px; font-weight: 600; border-radius: 12px; border: none; cursor: pointer; transition: all 0.2s; box-shadow: var(--shadow); text-transform: uppercase; letter-spacing: 0.5px; }
+        .btn-primary { background-color: var(--primary); color: white; }
+        .btn-primary:hover { background-color: var(--primary-hover); transform: translateY(-2px); }
+        .btn-secondary { background-color: var(--surface); color: var(--text-main); border: 2px solid var(--border); }
+        .btn-secondary:hover { background-color: var(--border); }
+        .btn-danger { background-color: var(--danger); color: white; }
+        .btn-success { background-color: var(--success); color: white; }
+        .btn-large { width: 100%; max-width: 400px; padding: 20px; font-size: 20px; }
+        .btn-small { padding: 8px 16px; font-size: 14px; border-radius: 8px; }
+        .btn-icon-only { padding: 10px; border-radius: 8px; }
+
+        /* MENU OVERLAY */
+        #menu-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--modal-overlay); z-index: 50; display: none; opacity: 0; transition: opacity 0.3s; }
+        #menu-overlay.active { display: block; opacity: 1; }
+        .menu-content { position: absolute; top: 0; left: -300px; width: 300px; height: 100%; background-color: var(--surface); box-shadow: var(--shadow); transition: left 0.3s ease; display: flex; flex-direction: column; padding: 24px; }
+        #menu-overlay.active .menu-content { left: 0; }
+        .menu-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; border-bottom: 2px solid var(--border); padding-bottom: 16px; }
+        .menu-item { display: flex; align-items: center; gap: 12px; padding: 16px; font-size: 18px; font-weight: 600; color: var(--text-main); cursor: pointer; border-radius: 8px; transition: background 0.2s; margin-bottom: 8px; border: 1px solid transparent; }
+        .menu-item:hover { background-color: var(--bg-color); border-color: var(--border); }
+        .menu-separator { height: 2px; background-color: var(--border); margin: 16px 0; }
+
+        /* SCREEN 0: HOME */
+        .home-container { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; gap: 24px; text-align: center; }
+        .home-title { font-size: 48px; color: var(--primary); margin-bottom: 16px; }
+
+        /* SCREEN 1: REGRAS */
+        .content-card { background-color: var(--surface); border-radius: 16px; padding: 32px; box-shadow: var(--shadow); width: 100%; max-width: 800px; margin: 0 auto 24px; }
+        .screen-title { font-size: 32px; color: var(--primary); margin-bottom: 24px; border-bottom: 2px solid var(--primary); padding-bottom: 8px; }
+        .rules-list { list-style: none; display: flex; flex-direction: column; gap: 20px; }
+        .rules-list li { display: flex; gap: 16px; font-size: 20px; line-height: 1.5; align-items: flex-start; }
+        .rule-icon { flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; background-color: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 18px; }
+
+        /* SCREEN 2: EXEMPLO */
+        .notebook-sheet { background-color: #fffdf8; border: 1px solid var(--border); border-left: 4px solid #fca5a5; padding: 24px; border-radius: 8px; box-shadow: inset 0 0 20px rgba(0,0,0,0.02), var(--shadow); margin-bottom: 24px; display: flex; gap: 24px; overflow-x: auto; align-items: flex-start; }
+        .table-wrapper { flex: 1; min-width: 250px; }
+        .bingo-table { border-collapse: collapse; width: 100%; background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .bingo-table td, .bingo-table th { border: 2px solid var(--text-main); width: 20%; aspect-ratio: 1/1; text-align: center; vertical-align: middle; font-size: 22px; font-weight: bold; cursor: pointer; user-select: none; transition: background 0.1s; }
+        .bingo-table td:hover { background-color: var(--bg-color); }
+        .bingo-table td.marked { background-color: var(--primary); color: white; }
+
+        /* SCREEN 3: TIMER & GRID */
+        .timer-display { font-size: 72px; font-weight: 900; color: var(--text-main); text-align: center; margin-bottom: 24px; font-variant-numeric: tabular-nums; }
+        .reference-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 12px; margin-bottom: 24px; }
+        .ref-number { aspect-ratio: 1; border-radius: 50%; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold; color: var(--text-light); background: var(--surface); box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: all 0.3s; }
+        .ref-number.drawn { background-color: var(--success); color: white; border-color: var(--success); transform: scale(1.05); box-shadow: 0 4px 8px rgba(16, 185, 129, 0.4); }
+        .timer-controls { display: flex; justify-content: center; flex-wrap: wrap; gap: 16px; margin-bottom: 24px; }
+
+        /* SCREEN 4: SORTEIO */
+        .sorteio-container { display: flex; flex-direction: column; align-items: center; flex: 1; gap: 32px; }
+        .globo { width: 300px; height: 300px; border-radius: 50%; background: radial-gradient(circle at 30% 30%, var(--primary), var(--text-main)); display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2), inset 0 0 40px rgba(0,0,0,0.5); position: relative; }
+        .globo-display { width: 220px; height: 220px; background-color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 100px; font-weight: 900; color: var(--text-main); box-shadow: inset 0 4px 10px rgba(0,0,0,0.1); }
+        .animating .globo-display { color: var(--secondary); filter: blur(1px); }
+        .drawn-history-container { width: 100%; max-width: 1000px; background: var(--surface); padding: 24px; border-radius: 16px; box-shadow: var(--shadow); margin-bottom: 40px; }
+        .history-title { font-size: 20px; font-weight: bold; margin-bottom: 16px; color: var(--text-light); text-align: center; }
+        
+        /* MODALS */
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--modal-overlay); z-index: 100; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+        .modal.active { opacity: 1; pointer-events: auto; }
+        .modal-content { background-color: var(--surface); border-radius: 16px; padding: 32px; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); transform: scale(0.95); transition: transform 0.2s; text-align: center; }
+        .modal.active .modal-content { transform: scale(1); }
+        .modal-title { font-size: 28px; font-weight: bold; margin-bottom: 16px; color: var(--text-main); }
+        .modal-text { font-size: 18px; color: var(--text-light); margin-bottom: 32px; line-height: 1.5; }
+        .modal-actions { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-top: 24px; }
+        
+        /* SETTINGS FORM */
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+        .form-group { text-align: left; }
+        .form-label { display: block; font-weight: 600; margin-bottom: 8px; color: var(--text-main); font-size: 16px; }
+        .form-input { width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; font-size: 16px; outline: none; transition: border-color 0.2s; background: white; }
+        .form-input:focus { border-color: var(--primary); }
+        .settings-rules-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; text-align: left; }
+        .settings-rule-item { display: flex; gap: 8px; align-items: flex-start; }
+        .settings-rule-item textarea { flex: 1; resize: vertical; min-height: 60px; }
+        .settings-tip { font-size: 14px; color: var(--text-light); font-style: italic; margin-top: 4px; }
+
+        /* LAYOUT HELPERS */
+        .bottom-bar { display: flex; justify-content: center; margin-top: auto; padding-top: 32px; padding-bottom: 16px; }
+        
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .reference-grid { grid-template-columns: repeat(5, 1fr); gap: 8px; }
+            .timer-display { font-size: 56px; }
+            .globo { width: 240px; height: 240px; }
+            .globo-display { width: 160px; height: 160px; font-size: 72px; }
+            .btn { padding: 12px 24px; font-size: 16px; }
+            .notebook-sheet { gap: 16px; }
+            .table-wrapper { min-width: 200px; }
+            .form-row { grid-template-columns: 1fr; gap: 16px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Bingo Matemático</h1>
+        <button class="icon-btn" id="btn-menu" aria-label="Menu">
+            <svg viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+        </button>
+    </header>
+
+    <div id="menu-overlay">
+        <div class="menu-content">
+            <div class="menu-header">
+                <h2>Menu</h2>
+                <button class="icon-btn" id="btn-close-menu" aria-label="Fechar">
+                    <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                </button>
+            </div>
+            <div class="menu-item" onclick="navigate('home')">
+                <svg width="24" height="24" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg> Início
+            </div>
+            <div class="menu-item" onclick="navigate('regras')">
+                <svg width="24" height="24" viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg> Regras
+            </div>
+            <div class="menu-item" onclick="navigate('exemplo')">
+                <svg width="24" height="24" viewBox="0 0 24 24"><path d="M3 3v18h18V3H3zm8 16H5v-6h6v6zm0-8H5V5h6v6zm8 8h-6v-6h6v6zm0-8h-6V5h6v6z"/></svg> Modelagem
+            </div>
+            <div class="menu-item" onclick="navigate('timer')">
+                <svg width="24" height="24" viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/><path d="M12.5 7H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg> Construção (Timer)
+            </div>
+            <div class="menu-item" onclick="navigate('sorteio')">
+                <svg width="24" height="24" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg> Sorteio (O Jogo)
+            </div>
+            
+            <div class="menu-separator"></div>
+            
+            <div class="menu-item" onclick="openSettingsModal()">
+                <svg width="24" height="24" viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.06-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.73,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.06,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.43-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.49-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg> Configurações
+            </div>
+        </div>
+    </div>
+
+    <main>
+        <section id="screen-home" class="screen active">
+            <div class="home-container">
+                <h2 class="home-title">Preparação e Sorteio</h2>
+                <button class="btn btn-primary btn-large" onclick="navigate('regras')">
+                    <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg> Iniciar Game
+                </button>
+                <button class="btn btn-secondary btn-large" onclick="document.getElementById('btn-menu').click()">
+                    <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg> Acessar Menu
+                </button>
+            </div>
+        </section>
+
+        <section id="screen-regras" class="screen">
+            <div class="content-card">
+                <h2 class="screen-title">Regras do Jogo</h2>
+                <ul class="rules-list" id="display-rules-list">
+                    </ul>
+            </div>
+            <div class="bottom-bar">
+                <button class="btn btn-primary" onclick="navigate('exemplo')">Avançar para Modelagem <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg></button>
+            </div>
+        </section>
+
+        <section id="screen-exemplo" class="screen">
+            <h2 class="screen-title" style="text-align: center;">Exemplo de Tabelas (Folha de Caderno)</h2>
+            <div class="notebook-sheet" id="notebook-sheet">
+                </div>
+            <div class="bottom-bar">
+                <button class="btn btn-primary" onclick="navigate('timer')">Avançar para Construção <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg></button>
+            </div>
+        </section>
+
+        <section id="screen-timer" class="screen">
+            <h2 class="screen-title" style="text-align: center;">Construção das Tabelas</h2>
+            
+            <div class="timer-display" id="timer-display">10:00</div>
+            
+            <div class="timer-controls">
+                <button class="btn btn-primary" id="btn-start-timer" onclick="startTimer()">Iniciar Tempo</button>
+                <button class="btn btn-secondary" onclick="resetTimer()">Zerar Tempo</button>
+                <button class="btn btn-success" onclick="navigate('sorteio')">Pular para Jogo</button>
+            </div>
+
+            <div class="content-card">
+                <h3 class="history-title" id="timer-grid-title">Escolha números de 01 a --</h3>
+                <div class="reference-grid" id="timer-reference-grid">
+                    </div>
+            </div>
+            
+            <div style="height: 40px;"></div> 
+        </section>
+
+        <section id="screen-sorteio" class="screen">
+            <div class="sorteio-container">
+                <div class="globo" id="globo-container">
+                    <div class="globo-display" id="numero-sorteado">--</div>
+                </div>
+                
+                <div style="display: flex; gap: 16px;">
+                    <button class="btn btn-primary" id="btn-sortear" onclick="sortearNumero()" style="font-size: 24px; padding: 20px 40px;">
+                        <svg width="28" height="28" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg> Sortear Pedra
+                    </button>
+                    <button class="btn btn-danger" onclick="openModal('modal-reset')" aria-label="Reiniciar Jogo">
+                        <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+                    </button>
+                </div>
+
+                <div class="drawn-history-container">
+                    <h3 class="history-title">Painel de Referência (Pedras Sorteadas)</h3>
+                    <div class="reference-grid" id="sorteio-reference-grid">
+                        </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div id="modal-settings" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <h2 class="modal-title">Configurações</h2>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Total de Bolas</label>
+                    <select id="config-max-numbers" class="form-input">
+                        <option value="40">40 Números</option>
+                        <option value="50">50 Números</option>
+                        <option value="60">60 Números</option>
+                        <option value="75">75 Números</option>
+                        <option value="90">90 Números</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tempo (Minutos)</label>
+                    <input type="number" id="config-timer-input" class="form-input" min="1" max="60" value="10">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Regras do Jogo</label>
+                <div class="settings-tip">Aviso: Se alterou o total de bolas acima, não esqueça de editar o texto da regra correspondente.</div>
+                <div class="settings-rules-list" id="settings-rules-container" style="margin-top: 12px;">
+                    </div>
+                <button class="btn btn-secondary btn-small" onclick="addRuleInput('')" style="width: 100%;">
+                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg> Adicionar Regra
+                </button>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeModal('modal-settings')">Cancelar</button>
+                <button class="btn btn-primary" onclick="saveSettings()">Salvar Alterações</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-timer-end" class="modal">
+        <div class="modal-content">
+            <h2 class="modal-title">Tempo Esgotado!</h2>
+            <p class="modal-text">Canetas na mesa! Nenhuma nova tabela ou número pode ser adicionado. Preparados para o sorteio?</p>
+            <div class="modal-actions">
+                <button class="btn btn-primary" onclick="closeModal('modal-timer-end'); navigate('sorteio')">Ir para o Sorteio</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-reset" class="modal">
+        <div class="modal-content">
+            <h2 class="modal-title" style="color: var(--danger)">Reiniciar Sorteio?</h2>
+            <p class="modal-text">Esta ação apagará todo o histórico de pedras já sorteadas. Tem certeza?</p>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeModal('modal-reset')">Cancelar</button>
+                <button class="btn btn-danger" onclick="resetGame(); closeModal('modal-reset')">Sim, Reiniciar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-game-over" class="modal">
+        <div class="modal-content">
+            <h2 class="modal-title">Bingo Encerrado!</h2>
+            <p class="modal-text" id="game-over-text">Todos os números já foram sorteados.</p>
+            <div class="modal-actions">
+                <button class="btn btn-primary" onclick="closeModal('modal-game-over')">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* ================= ESTADO E CONFIGURAÇÕES ================= */
+        let bingoMaxNumbers = parseInt(localStorage.getItem('bingoMaxNumbers')) || 60;
+        let baseTimerMinutes = parseInt(localStorage.getItem('bingoTimerMins')) || 10;
+
+        const defaultRules = [
+            "O tempo de preparação é restrito pelo cronômetro. Após zerar, nenhuma nova tabela ou alteração será permitida.",
+            "Cada tabela deve possuir estrutura 5x5, preenchida com números aleatórios não repetidos. Tabelas fora do padrão serão desclassificadas.",
+            "O espaço é restrito a no máximo uma folha de caderno. Dentro desse limite, construa quantas tabelas conseguir.",
+            "Primeira Vitória: O primeiro a completar uma tabela validada recebe a premiação principal.",
+            "Segunda Vitória: Para faturar uma vitória adicional, a validação dependerá da resolução correta de um desafio matemático."
+        ];
+
+        let appRules = JSON.parse(localStorage.getItem('bingoRules')) || defaultRules;
+
+        function renderDisplayRules() {
+            const container = document.getElementById('display-rules-list');
+            container.innerHTML = '';
+            appRules.forEach((rule, index) => {
+                if (rule.trim() !== '') {
+                    let li = document.createElement('li');
+                    li.innerHTML = `<span class="rule-icon">${index + 1}</span> <span>${rule}</span>`;
+                    container.appendChild(li);
+                }
+            });
+        }
+
+        /* ================= ESTRUTURA GERAL E PONTE KODULAR ================= */
+        let navigationHistory = ['home'];
+
+        function sendKodularMessage(msg) {
+            if (window.AppInventor && window.AppInventor.setWebViewString) {
+                window.AppInventor.setWebViewString(msg);
+            }
+        }
+
+        function handleAndroidBack() {
+            const activeModals = document.querySelectorAll('.modal.active');
+            if (activeModals.length > 0) {
+                if(activeModals[0].id !== 'modal-timer-end') {
+                    activeModals[0].classList.remove('active');
+                }
+                return;
+            }
+
+            const menu = document.getElementById('menu-overlay');
+            if (menu.classList.contains('active')) {
+                menu.classList.remove('active');
+                return;
+            }
+
+            if (navigationHistory.length > 1) {
+                navigationHistory.pop(); 
+                const prevScreen = navigationHistory[navigationHistory.length - 1];
+                showScreenOnly(prevScreen);
+            } else {
+                sendKodularMessage("FECHAR_APP");
+            }
+        }
+
+        window.receberTextoDoKodular = function(texto) { console.log("Retorno Kodular: ", texto); };
+
+        /* ================= NAVEGAÇÃO E MODAIS ================= */
+        function navigate(screenId) {
+            if (navigationHistory[navigationHistory.length - 1] !== screenId) {
+                navigationHistory.push(screenId);
+            }
+            showScreenOnly(screenId);
+            document.getElementById('menu-overlay').classList.remove('active');
+        }
+
+        function showScreenOnly(screenId) {
+            document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+            document.getElementById('screen-' + screenId).classList.add('active');
+            if (screenId === 'sorteio') renderizarPainelSorteio();
+        }
+
+        const menuOverlay = document.getElementById('menu-overlay');
+        document.getElementById('btn-menu').addEventListener('click', () => menuOverlay.classList.add('active'));
+        document.getElementById('btn-close-menu').addEventListener('click', () => menuOverlay.classList.remove('active'));
+
+        window.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal')) {
+                if (e.target.id !== 'modal-timer-end' && e.target.id !== 'modal-settings') {
+                    e.target.classList.remove('active');
+                }
+            }
+            if (e.target === menuOverlay) menuOverlay.classList.remove('active');
+        });
+
+        function openModal(id) { document.getElementById(id).classList.add('active'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+        /* ================= MODAL SETTINGS ================= */
+        function openSettingsModal() {
+            document.getElementById('menu-overlay').classList.remove('active');
+            document.getElementById('config-timer-input').value = baseTimerMinutes;
+            document.getElementById('config-max-numbers').value = bingoMaxNumbers;
+            
+            const rulesContainer = document.getElementById('settings-rules-container');
+            rulesContainer.innerHTML = '';
+            appRules.forEach(rule => addRuleInput(rule));
+            
+            openModal('modal-settings');
+        }
+
+        function addRuleInput(value = '') {
+            const container = document.getElementById('settings-rules-container');
+            const wrapper = document.createElement('div');
+            wrapper.className = 'settings-rule-item';
+            
+            const textarea = document.createElement('textarea');
+            textarea.className = 'form-input rule-input-field';
+            textarea.value = value;
+            textarea.placeholder = "Digite a regra aqui...";
+            
+            const delBtn = document.createElement('button');
+            delBtn.className = 'btn btn-danger btn-icon-only';
+            delBtn.innerHTML = '<svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>';
+            delBtn.onclick = () => wrapper.remove();
+            
+            wrapper.appendChild(textarea);
+            wrapper.appendChild(delBtn);
+            container.appendChild(wrapper);
+        }
+
+        function saveSettings() {
+            // Salvar Timer
+            const newTimerVal = parseInt(document.getElementById('config-timer-input').value);
+            if (newTimerVal && newTimerVal > 0) {
+                baseTimerMinutes = newTimerVal;
+                localStorage.setItem('bingoTimerMins', baseTimerMinutes);
+                resetTimer(); 
+            }
+
+            // Salvar Quantidade de Bolas
+            const newMaxNumbers = parseInt(document.getElementById('config-max-numbers').value);
+            if (newMaxNumbers !== bingoMaxNumbers) {
+                bingoMaxNumbers = newMaxNumbers;
+                localStorage.setItem('bingoMaxNumbers', bingoMaxNumbers);
+                
+                // Regenerar layouts que dependem deste valor
+                document.getElementById('timer-grid-title').innerText = `Escolha números de 01 a ${bingoMaxNumbers}`;
+                gerarExemploTabelas();
+                createGrid('timer-reference-grid');
+                createGrid('sorteio-reference-grid');
+                resetGame(); // Reset obrigatório para evitar dados fora do limite
+            }
+            
+            // Salvar Regras
+            const ruleInputs = document.querySelectorAll('.rule-input-field');
+            let newRules = [];
+            ruleInputs.forEach(input => {
+                if(input.value.trim() !== '') newRules.push(input.value.trim());
+            });
+            
+            if(newRules.length === 0) newRules = defaultRules; 
+            
+            appRules = newRules;
+            localStorage.setItem('bingoRules', JSON.stringify(appRules));
+            renderDisplayRules(); 
+            
+            closeModal('modal-settings');
+        }
+
+        /* ================= TELA 2: EXEMPLO (MODELAGEM) ================= */
+        function gerarExemploTabelas() {
+            const container = document.getElementById('notebook-sheet');
+            container.innerHTML = '';
+            for (let t = 0; t < 3; t++) {
+                let wrapper = document.createElement('div');
+                wrapper.className = 'table-wrapper';
+                let table = document.createElement('table');
+                table.className = 'bingo-table';
+                
+                let nums = [];
+                while(nums.length < 25) {
+                    let r = Math.floor(Math.random() * bingoMaxNumbers) + 1;
+                    if(nums.indexOf(r) === -1) nums.push(r);
+                }
+                
+                let tbody = document.createElement('tbody');
+                let counter = 0;
+                for (let i = 0; i < 5; i++) {
+                    let tr = document.createElement('tr');
+                    for (let j = 0; j < 5; j++) {
+                        let td = document.createElement('td');
+                        td.innerText = nums[counter].toString().padStart(2, '0');
+                        td.addEventListener('click', function() { this.classList.toggle('marked'); });
+                        tr.appendChild(td);
+                        counter++;
+                    }
+                    tbody.appendChild(tr);
+                }
+                table.appendChild(tbody);
+                wrapper.appendChild(table);
+                container.appendChild(wrapper);
+            }
+        }
+
+        /* ================= TELA 3 E 4: GERAÇÃO DE GRIDS ================= */
+        function createGrid(containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            for (let i = 1; i <= bingoMaxNumbers; i++) {
+                let div = document.createElement('div');
+                div.className = 'ref-number';
+                div.id = `${containerId}-num-${i}`;
+                div.innerText = i.toString().padStart(2, '0');
+                container.appendChild(div);
+            }
+        }
+        
+        /* ================= LÓGICA DO TIMER ================= */
+        let timerInterval;
+        let timeLeft = baseTimerMinutes * 60; 
+        const displayTimer = document.getElementById('timer-display');
+        const btnStartTimer = document.getElementById('btn-start-timer');
+
+        function updateTimerDisplay() {
+            let m = Math.floor(timeLeft / 60);
+            let s = timeLeft % 60;
+            displayTimer.innerText = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        }
+
+        function startTimer() {
+            if (timerInterval) return;
+            btnStartTimer.disabled = true;
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                    openModal('modal-timer-end');
+                }
+            }, 1000);
+        }
+
+        function resetTimer() {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            timeLeft = baseTimerMinutes * 60;
+            updateTimerDisplay();
+            btnStartTimer.disabled = false;
+        }
+
+        /* ================= LÓGICA DO SORTEIO E LOCAL STORAGE ================= */
+        let numerosSorteados = JSON.parse(localStorage.getItem('bingoState')) || [];
+        const globoDisplay = document.getElementById('numero-sorteado');
+        const globoContainer = document.getElementById('globo-container');
+        const btnSortear = document.getElementById('btn-sortear');
+        let isAnimating = false;
+
+        function renderizarPainelSorteio() {
+            // Usa o maximo atual para varrer e limpar classes
+            for(let i=1; i<=bingoMaxNumbers; i++) {
+                let element = document.getElementById(`sorteio-reference-grid-num-${i}`);
+                if(element) element.classList.remove('drawn');
+            }
+            if (numerosSorteados.length > 0) {
+                globoDisplay.innerText = numerosSorteados[numerosSorteados.length - 1].toString().padStart(2, '0');
+                numerosSorteados.forEach(num => {
+                    let element = document.getElementById(`sorteio-reference-grid-num-${num}`);
+                    if(element) element.classList.add('drawn');
+                });
+            } else {
+                globoDisplay.innerText = "--";
+            }
+        }
+
+        function sortearNumero() {
+            if (isAnimating) return;
+            if (numerosSorteados.length >= bingoMaxNumbers) {
+                document.getElementById('game-over-text').innerText = `Todos os ${bingoMaxNumbers} números já foram sorteados.`;
+                openModal('modal-game-over');
+                return;
+            }
+
+            isAnimating = true;
+            btnSortear.disabled = true;
+            globoContainer.classList.add('animating');
+            
+            let tempoAnimacao = 0;
+            let animInterval = setInterval(() => {
+                globoDisplay.innerText = (Math.floor(Math.random() * bingoMaxNumbers) + 1).toString().padStart(2, '0');
+                tempoAnimacao += 100;
+                
+                if (tempoAnimacao >= 2500) {
+                    clearInterval(animInterval);
+                    finalizarSorteio();
+                }
+            }, 100);
+        }
+
+        function finalizarSorteio() {
+            let disponiveis = [];
+            for (let i = 1; i <= bingoMaxNumbers; i++) {
+                if (!numerosSorteados.includes(i)) disponiveis.push(i);
+            }
+            
+            let numSorteado = disponiveis[Math.floor(Math.random() * disponiveis.length)];
+            numerosSorteados.push(numSorteado);
+            localStorage.setItem('bingoState', JSON.stringify(numerosSorteados));
+            
+            globoDisplay.innerText = numSorteado.toString().padStart(2, '0');
+            let drawnElement = document.getElementById(`sorteio-reference-grid-num-${numSorteado}`);
+            if(drawnElement) drawnElement.classList.add('drawn');
+            
+            globoContainer.classList.remove('animating');
+            isAnimating = false;
+            btnSortear.disabled = false;
+        }
+
+        function resetGame() {
+            numerosSorteados = [];
+            localStorage.removeItem('bingoState');
+            renderizarPainelSorteio();
+        }
+
+        // Inicialização Garantida
+        document.addEventListener("DOMContentLoaded", function() {
+            document.getElementById('timer-grid-title').innerText = `Escolha números de 01 a ${bingoMaxNumbers}`;
+            renderDisplayRules();
+            gerarExemploTabelas();
+            createGrid('timer-reference-grid');
+            createGrid('sorteio-reference-grid');
+            updateTimerDisplay();
+        });
+
+    </script>
+</body>
+</html>
