@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Bingo Matemático</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2563eb">
+    
     <style>
         :root {
             --primary: #2563eb;
@@ -64,7 +68,7 @@
         .home-container { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; gap: 24px; text-align: center; }
         .home-title { font-size: 48px; color: var(--primary); margin-bottom: 16px; }
 
-        /* SCREEN 1: REGRAS */
+        /* SCREEN 1: PREPARAÇÃO */
         .content-card { background-color: var(--surface); border-radius: 16px; padding: 32px; box-shadow: var(--shadow); width: 100%; max-width: 800px; margin: 0 auto 24px; }
         .screen-title { font-size: 32px; color: var(--primary); margin-bottom: 24px; border-bottom: 2px solid var(--primary); padding-bottom: 8px; }
         .rules-list { list-style: none; display: flex; flex-direction: column; gap: 20px; }
@@ -75,7 +79,7 @@
         .notebook-sheet { background-color: #fffdf8; border: 1px solid var(--border); border-left: 4px solid #fca5a5; padding: 24px; border-radius: 8px; box-shadow: inset 0 0 20px rgba(0,0,0,0.02), var(--shadow); margin-bottom: 24px; display: flex; gap: 24px; overflow-x: auto; align-items: flex-start; }
         .table-wrapper { flex: 1; min-width: 250px; }
         .bingo-table { border-collapse: collapse; width: 100%; background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .bingo-table td, .bingo-table th { border: 2px solid var(--text-main); width: 20%; aspect-ratio: 1/1; text-align: center; vertical-align: middle; font-size: 22px; font-weight: bold; cursor: pointer; user-select: none; transition: background 0.1s; }
+        .bingo-table td { border: 2px solid var(--text-main); aspect-ratio: 1/1; text-align: center; vertical-align: middle; font-size: 22px; font-weight: bold; cursor: pointer; user-select: none; transition: background 0.1s; }
         .bingo-table td:hover { background-color: var(--bg-color); }
         .bingo-table td.marked { background-color: var(--primary); color: white; }
 
@@ -105,14 +109,13 @@
         
         /* SETTINGS FORM */
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
-        .form-group { text-align: left; }
+        .form-group { text-align: left; margin-bottom: 16px; }
         .form-label { display: block; font-weight: 600; margin-bottom: 8px; color: var(--text-main); font-size: 16px; }
         .form-input { width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; font-size: 16px; outline: none; transition: border-color 0.2s; background: white; }
         .form-input:focus { border-color: var(--primary); }
         .settings-rules-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; text-align: left; }
         .settings-rule-item { display: flex; gap: 8px; align-items: flex-start; }
         .settings-rule-item textarea { flex: 1; resize: vertical; min-height: 60px; }
-        .settings-tip { font-size: 14px; color: var(--text-light); font-style: italic; margin-top: 4px; }
 
         /* LAYOUT HELPERS */
         .bottom-bar { display: flex; justify-content: center; margin-top: auto; padding-top: 32px; padding-bottom: 16px; }
@@ -151,7 +154,7 @@
                 <svg width="24" height="24" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg> Início
             </div>
             <div class="menu-item" onclick="navigate('regras')">
-                <svg width="24" height="24" viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg> Regras
+                <svg width="24" height="24" viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg> Preparação
             </div>
             <div class="menu-item" onclick="navigate('exemplo')">
                 <svg width="24" height="24" viewBox="0 0 24 24"><path d="M3 3v18h18V3H3zm8 16H5v-6h6v6zm0-8H5V5h6v6zm8 8h-6v-6h6v6zm0-8h-6V5h6v6z"/></svg> Modelagem
@@ -186,7 +189,7 @@
 
         <section id="screen-regras" class="screen">
             <div class="content-card">
-                <h2 class="screen-title">Regras do Jogo</h2>
+                <h2 class="screen-title">Preparação do Jogo</h2>
                 <ul class="rules-list" id="display-rules-list">
                     </ul>
             </div>
@@ -196,7 +199,7 @@
         </section>
 
         <section id="screen-exemplo" class="screen">
-            <h2 class="screen-title" style="text-align: center;">Exemplo de Tabelas (Folha de Caderno)</h2>
+            <h2 class="screen-title" style="text-align: center;">Exemplo de Tabelas</h2>
             <div class="notebook-sheet" id="notebook-sheet">
                 </div>
             <div class="bottom-bar">
@@ -264,18 +267,26 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Tempo (Minutos)</label>
-                    <input type="number" id="config-timer-input" class="form-input" min="1" max="60" value="10">
+                    <label class="form-label">Tamanho da Tabela</label>
+                    <select id="config-grid-size" class="form-input">
+                        <option value="3">3x3 (9 números)</option>
+                        <option value="4">4x4 (16 números)</option>
+                        <option value="5">5x5 (25 números)</option>
+                    </select>
                 </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Tempo (Minutos)</label>
+                <input type="number" id="config-timer-input" class="form-input" min="1" max="60" value="10">
             </div>
 
             <div class="form-group">
-                <label class="form-label">Regras do Jogo</label>
-                <div class="settings-tip">Aviso: Se alterou o total de bolas acima, não esqueça de editar o texto da regra correspondente.</div>
-                <div class="settings-rules-list" id="settings-rules-container" style="margin-top: 12px;">
+                <label class="form-label">Instruções de Preparação</label>
+                <div class="settings-rules-list" id="settings-rules-container">
                     </div>
                 <button class="btn btn-secondary btn-small" onclick="addRuleInput('')" style="width: 100%;">
-                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg> Adicionar Regra
+                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg> Adicionar Instrução
                 </button>
             </div>
 
@@ -289,7 +300,7 @@
     <div id="modal-timer-end" class="modal">
         <div class="modal-content">
             <h2 class="modal-title">Tempo Esgotado!</h2>
-            <p class="modal-text">Canetas na mesa! Nenhuma nova tabela ou número pode ser adicionado. Preparados para o sorteio?</p>
+            <p class="modal-text">Canetas na mesa! Preparados para o sorteio?</p>
             <div class="modal-actions">
                 <button class="btn btn-primary" onclick="closeModal('modal-timer-end'); navigate('sorteio')">Ir para o Sorteio</button>
             </div>
@@ -318,19 +329,32 @@
     </div>
 
     <script>
+        /* ================= PWA REGISTRATION ================= */
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').catch(err => console.log('SW falhou: ', err));
+            });
+        }
+
         /* ================= ESTADO E CONFIGURAÇÕES ================= */
         let bingoMaxNumbers = parseInt(localStorage.getItem('bingoMaxNumbers')) || 60;
         let baseTimerMinutes = parseInt(localStorage.getItem('bingoTimerMins')) || 10;
+        let bingoGridSize = parseInt(localStorage.getItem('bingoGridSize')) || 4; // Default 4x4
 
-        const defaultRules = [
-            "O tempo de preparação é restrito pelo cronômetro. Após zerar, nenhuma nova tabela ou alteração será permitida.",
-            "Cada tabela deve possuir estrutura 5x5, preenchida com números aleatórios não repetidos. Tabelas fora do padrão serão desclassificadas.",
-            "O espaço é restrito a no máximo uma folha de caderno. Dentro desse limite, construa quantas tabelas conseguir.",
-            "Primeira Vitória: O primeiro a completar uma tabela validada recebe a premiação principal.",
-            "Segunda Vitória: Para faturar uma vitória adicional, a validação dependerá da resolução correta de um desafio matemático."
+        const defaultInstructions = [
+            "Construção das Tabelas: Os alunos devem desenhar, em seus cadernos, tabelas no tamanho programado pelo professor para a atividade (ex: matrizes 4x4, 5x5, etc.).",
+            "Preenchimento Autônomo: Cada tabela deve ser preenchida pelos alunos com números aleatórios e sem repetição, usando como guia o intervalo numérico disponível na tela.",
+            "Gestão de Tempo (Opcional): O professor pode acionar o cronômetro integrado do aplicativo para estipular um limite de tempo. Os alunos tentam construir e validar quantas tabelas conseguirem.",
+            "Dinâmica do Sorteio: Durante a rodada, os alunos analisam suas produções e marcam os valores sorteados. O objetivo é completar o padrão estabelecido para gritar \"Bingo!\".",
+            "Controle do Professor: O formato das tabelas, o tempo, a quantidade total de números e estes textos explicativos podem ser alterados na Tela de Configurações."
         ];
 
-        let appRules = JSON.parse(localStorage.getItem('bingoRules')) || defaultRules;
+        // Migração ou inicialização de regras
+        let appRules = JSON.parse(localStorage.getItem('bingoRules'));
+        if (!appRules || appRules.length === 0 || appRules[0].includes("tempo de preparação é restrito")) {
+            appRules = defaultInstructions;
+            localStorage.setItem('bingoRules', JSON.stringify(appRules));
+        }
 
         function renderDisplayRules() {
             const container = document.getElementById('display-rules-list');
@@ -353,7 +377,8 @@
             }
         }
 
-        function handleAndroidBack() {
+        // Função de hardware adaptada para o Indexador
+        window.handleAndroidBack = function() {
             const activeModals = document.querySelectorAll('.modal.active');
             if (activeModals.length > 0) {
                 if(activeModals[0].id !== 'modal-timer-end') {
@@ -373,9 +398,9 @@
                 const prevScreen = navigationHistory[navigationHistory.length - 1];
                 showScreenOnly(prevScreen);
             } else {
-                sendKodularMessage("FECHAR_APP");
+                sendKodularMessage("VOLTAR_MENU"); // String Padrão para o Indexador
             }
-        }
+        };
 
         window.receberTextoDoKodular = function(texto) { console.log("Retorno Kodular: ", texto); };
 
@@ -415,6 +440,7 @@
             document.getElementById('menu-overlay').classList.remove('active');
             document.getElementById('config-timer-input').value = baseTimerMinutes;
             document.getElementById('config-max-numbers').value = bingoMaxNumbers;
+            document.getElementById('config-grid-size').value = bingoGridSize;
             
             const rulesContainer = document.getElementById('settings-rules-container');
             rulesContainer.innerHTML = '';
@@ -431,7 +457,7 @@
             const textarea = document.createElement('textarea');
             textarea.className = 'form-input rule-input-field';
             textarea.value = value;
-            textarea.placeholder = "Digite a regra aqui...";
+            textarea.placeholder = "Digite o texto aqui...";
             
             const delBtn = document.createElement('button');
             delBtn.className = 'btn btn-danger btn-icon-only';
@@ -454,16 +480,28 @@
 
             // Salvar Quantidade de Bolas
             const newMaxNumbers = parseInt(document.getElementById('config-max-numbers').value);
+            let needsReset = false;
+            
             if (newMaxNumbers !== bingoMaxNumbers) {
                 bingoMaxNumbers = newMaxNumbers;
                 localStorage.setItem('bingoMaxNumbers', bingoMaxNumbers);
-                
-                // Regenerar layouts que dependem deste valor
                 document.getElementById('timer-grid-title').innerText = `Escolha números de 01 a ${bingoMaxNumbers}`;
-                gerarExemploTabelas();
                 createGrid('timer-reference-grid');
                 createGrid('sorteio-reference-grid');
-                resetGame(); // Reset obrigatório para evitar dados fora do limite
+                needsReset = true;
+            }
+
+            // Salvar Tamanho da Tabela
+            const newGridSize = parseInt(document.getElementById('config-grid-size').value);
+            if (newGridSize !== bingoGridSize) {
+                bingoGridSize = newGridSize;
+                localStorage.setItem('bingoGridSize', bingoGridSize);
+                needsReset = true;
+            }
+
+            if(needsReset) {
+                gerarExemploTabelas();
+                resetGame();
             }
             
             // Salvar Regras
@@ -473,7 +511,7 @@
                 if(input.value.trim() !== '') newRules.push(input.value.trim());
             });
             
-            if(newRules.length === 0) newRules = defaultRules; 
+            if(newRules.length === 0) newRules = defaultInstructions; 
             
             appRules = newRules;
             localStorage.setItem('bingoRules', JSON.stringify(appRules));
@@ -482,10 +520,13 @@
             closeModal('modal-settings');
         }
 
-        /* ================= TELA 2: EXEMPLO (MODELAGEM) ================= */
+        /* ================= TELA 2: EXEMPLO (MODELAGEM) DINÂMICO ================= */
         function gerarExemploTabelas() {
             const container = document.getElementById('notebook-sheet');
             container.innerHTML = '';
+            
+            let totalCells = bingoGridSize * bingoGridSize;
+
             for (let t = 0; t < 3; t++) {
                 let wrapper = document.createElement('div');
                 wrapper.className = 'table-wrapper';
@@ -493,18 +534,19 @@
                 table.className = 'bingo-table';
                 
                 let nums = [];
-                while(nums.length < 25) {
+                while(nums.length < totalCells) {
                     let r = Math.floor(Math.random() * bingoMaxNumbers) + 1;
                     if(nums.indexOf(r) === -1) nums.push(r);
                 }
                 
                 let tbody = document.createElement('tbody');
                 let counter = 0;
-                for (let i = 0; i < 5; i++) {
+                for (let i = 0; i < bingoGridSize; i++) {
                     let tr = document.createElement('tr');
-                    for (let j = 0; j < 5; j++) {
+                    for (let j = 0; j < bingoGridSize; j++) {
                         let td = document.createElement('td');
                         td.innerText = nums[counter].toString().padStart(2, '0');
+                        td.style.width = `${100 / bingoGridSize}%`;
                         td.addEventListener('click', function() { this.classList.toggle('marked'); });
                         tr.appendChild(td);
                         counter++;
@@ -572,7 +614,6 @@
         let isAnimating = false;
 
         function renderizarPainelSorteio() {
-            // Usa o maximo atual para varrer e limpar classes
             for(let i=1; i<=bingoMaxNumbers; i++) {
                 let element = document.getElementById(`sorteio-reference-grid-num-${i}`);
                 if(element) element.classList.remove('drawn');
