@@ -1,0 +1,18 @@
+{
+  "name": "Bingo Matemático",
+  "short_name": "Bingo Mat",
+  "description": "Aplicativo de suporte pedagógico para leitura e escrita de tabelas através do jogo de Bingo.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme-color": "#2563eb",
+  "orientation": "landscape",
+  "icons": [
+    {
+      "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512' fill='%232563eb'><circle cx='256' cy='256' r='240'/><text x='50%' y='65%' font-family='sans-serif' font-weight='bold' font-size='220' fill='white' text-anchor='middle'>B</text></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
